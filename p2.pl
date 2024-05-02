@@ -2,14 +2,16 @@
 
 % Input
 initial_board([
-    [red, red, blue, blue],
+    [red, red, red, blue],
     [red, red, red, red],
     [yellow, yellow, yellow, yellow],
     [red, red, red, red]
 ]).
+%state representation
 initial_state(state(0, 0, red)).
 
-
+goal_state(state(_, Y, _)) :-
+    Y =:= 3. 
 
 % Get the neighbors of a cell with the same color
 neighborhood(state(X, Y, Color), Neighbors) :-
@@ -30,27 +32,40 @@ adjacent(X1, Y1, X2, Y2) :-
     (X1 =:= X2, abs(Y1 - Y2) =:= 1);
     (Y1 =:= Y2, abs(X1 - X2) =:= 1).
 
-% Define the goal state
-goal_state(state(_, Y, _)) :-
-    Y =:= 3. % Goal state is any cell in the last column
 
-% Move from current state to the goal state
+
+% Move 
 move_to_goal(CurrentState, Path) :-
-    move_to_goal_helper(CurrentState, [CurrentState], Path).
+    move(CurrentState, [CurrentState], Path).
 
-move_to_goal_helper(state(X, Y, Color), Visited, [state(X, Y, Color) | Visited]) :-
+move(state(X, Y, Color), Visited, [state(X, Y, Color) | Visited]) :-
     goal_state(state(X, Y, Color)).
 
-move_to_goal_helper(CurrentState, Visited, Path) :-
+move(CurrentState, Visited, Path) :-
     neighborhood(CurrentState, Neighbors),
-    member(Neighbor, Neighbors),
+    sort_neighbors(Neighbors, SortedNeighbors), % Sort Neighbors
+    member(Neighbor, SortedNeighbors),
     \+ member(Neighbor, Visited),
-    move_to_goal_helper(Neighbor, [Neighbor | Visited], Path).
+    move(Neighbor, [Neighbor | Visited], Path).
 
 % Move to the state below the current state
 move_to_goal(CurrentState, Path) :-
     state_below(CurrentState, NextState),
+    NextState \== CurrentState, % Ensure not revisiting the initial state
     move_to_goal(NextState, Path).
+
+% heuristic function 
+sort_neighbors(Neighbors, SortedNeighbors) :-
+    map_list_to_pairs(difference_to_goal, Neighbors, NeighborsWithDiff),
+    keysort(NeighborsWithDiff, SortedNeighborsWithDiff),
+    pairs_values(SortedNeighborsWithDiff, SortedNeighbors).
+
+% Calculate the difference between the column of a state and the goal column (3)
+difference_to_goal(state(_, Y, _), Diff) :-
+    Diff is abs(3 - Y).
+
+
+
 
 state_below(state(X, Y, _), state(BelowX, BelowY, Color)) :-
     initial_board(Board),
@@ -61,6 +76,8 @@ state_below(state(X, Y, _), state(BelowX, BelowY, Color)) :-
     nth0(BelowX, Board, Row),
     nth0(BelowY, Row, Color).
 
+
+% output
 print_path([]).
 print_path([state(X, Y, _) | Path]) :-
     format("~d,~d", [X, Y]),
