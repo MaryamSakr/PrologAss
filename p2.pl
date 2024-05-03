@@ -8,7 +8,10 @@ initial_board([
     [red, red, red, red]
 ]).
 %state representation
-initial_state(state(0, 0, red)).
+initial_state(state(0, 0, Color)) :-
+    initial_board(Board),
+    nth0(0, Board, FirstRow),
+    nth0(0, FirstRow, Color).
 
 num_columns(NumColumns) :-
     initial_board(Board),
