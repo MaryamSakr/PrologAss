@@ -72,7 +72,8 @@ sort_neighbors(Neighbors, SortedNeighbors) :-
 
 % Calculate the difference between the column of a state and the goal column (3)
 difference_to_goal(state(_, Y, _), Diff) :-
-    Diff is abs(3 - Y).
+    num_columns(NumCols),
+    Diff is abs(NumCols -1 - Y).
 
 
 
