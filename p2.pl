@@ -10,8 +10,15 @@ initial_board([
 %state representation
 initial_state(state(0, 0, red)).
 
+num_columns(NumColumns) :-
+    initial_board(Board),
+    nth0(0, Board, FirstRow),
+    length(FirstRow, NumColumns).
+
 goal_state(state(_, Y, _)) :-
-    Y =:= 3. 
+    num_columns(NumCols),
+    Y is NumCols - 1.  
+ 
 
 % Get the neighbors of a cell with the same color
 neighborhood(state(X, Y, Color), Neighbors) :-
